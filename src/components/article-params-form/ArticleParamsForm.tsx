@@ -16,48 +16,55 @@ import {
 	backgroundColors,
 	contentWidthArr,
 	ArticleStateType,
+	defaultArticleState,
 } from 'src/constants/articleProps';
 
 type ArticleParamsFormProps = {
-	onFormChange: (state: ArticleStateType) => void;
-	currentState: ArticleStateType;
-	onReset: () => void;
-	onApply: () => void;
+	setArticleState: (state: ArticleStateType) => void;
+	articleState: ArticleStateType;
 };
 
 export const ArticleParamsForm = ({
-	onFormChange,
-	currentState,
-	onReset,
-	onApply,
+	setArticleState,
+	articleState,
 }: ArticleParamsFormProps) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const asideRef = useRef<HTMLElement>(null);
 
+	const [articleFormState, setArticleFormState] =
+		useState<ArticleStateType>(articleState);
+
+	const resetState = () => {
+		setArticleState(defaultArticleState);
+		setArticleFormState(defaultArticleState);
+	};
+
+	const setState = (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		setArticleState(articleFormState);
+	};
+
+	const handleFormChange = (newState: ArticleStateType) => {
+		setArticleFormState(newState);
+	};
+
 	const toggleOpen = () => {
 		setIsOpen((prev) => !prev);
-	};
-
-	const handleReset = () => {
-		onReset();
-	};
-
-	const handleApply = (event: React.FormEvent<HTMLFormElement>) => {
-		event.preventDefault();
-		onApply();
 	};
 
 	const handleSelectChange = (
 		key: keyof ArticleStateType,
 		value: OptionType
 	) => {
-		onFormChange({
-			...currentState,
+		handleFormChange({
+			...articleFormState,
 			[key]: value,
 		});
 	};
 
 	useEffect(() => {
+		if (!isOpen) return;
+
 		const handleClickOutside = (event: MouseEvent) => {
 			if (
 				isOpen &&
@@ -80,17 +87,14 @@ export const ArticleParamsForm = ({
 			<aside
 				ref={asideRef}
 				className={clsx(styles.container, { [styles.container_open]: isOpen })}>
-				<form
-					className={styles.form}
-					onSubmit={handleApply}
-					onReset={handleReset}>
+				<form className={styles.form} onSubmit={setState} onReset={resetState}>
 					<Text as='h2' size={31} weight={800} uppercase dynamicLite>
 						Задайте параметры
 					</Text>
 					<Select
 						title='Выберите опцию'
 						options={fontFamilyOptions}
-						selected={currentState.fontFamilyOption}
+						selected={articleFormState.fontFamilyOption}
 						placeholder='Выберите шрифт'
 						onChange={(option) =>
 							handleSelectChange('fontFamilyOption', option)
@@ -100,13 +104,13 @@ export const ArticleParamsForm = ({
 						name='fontSize'
 						title='Размер шрифта'
 						options={fontSizeOptions}
-						selected={currentState.fontSizeOption}
+						selected={articleFormState.fontSizeOption}
 						onChange={(option) => handleSelectChange('fontSizeOption', option)}
 					/>
 					<Select
 						title='Цвет шрифта'
 						options={fontColors}
-						selected={currentState.fontColor}
+						selected={articleFormState.fontColor}
 						placeholder='Выберите цвет шрифта'
 						onChange={(option) => handleSelectChange('fontColor', option)}
 					/>
@@ -114,14 +118,14 @@ export const ArticleParamsForm = ({
 					<Select
 						title='Цвет фона'
 						options={backgroundColors}
-						selected={currentState.backgroundColor}
+						selected={articleFormState.backgroundColor}
 						placeholder='Выберите цвет фона'
 						onChange={(option) => handleSelectChange('backgroundColor', option)}
 					/>
 					<Select
 						title='Ширина контента'
 						options={contentWidthArr}
-						selected={currentState.contentWidth}
+						selected={articleFormState.contentWidth}
 						placeholder='Выберите ширину контента'
 						onChange={(option) => handleSelectChange('contentWidth', option)}
 					/>
